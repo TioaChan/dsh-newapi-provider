@@ -40,7 +40,7 @@ async function setup(t, handler, options = {}) {
     },
   };
   const bound = { connection: { baseURL, channelId: 'fake', apiKeyName: 'FAKE', headers: { 'x-extra-secret': 'fake-header' } }, requireApiKey: async () => 'fake-key', catalog: async () => ({ entries: [{ id: 'video', kind: 'video' }, { id: 'image', kind: 'image' }] }) };
-  const host = { capture: () => bound, captureTask: () => bound, reportError() {} };
+  const host = { capture: (channelId) => { assert.equal(channelId, undefined, 'these tests use the default (first) channel'); return bound; }, captureTask: () => bound, reportError() {} };
   const media = registerMedia(ctx, host);
   const dispose = () => disposers.splice(0).reverse().forEach((fn) => fn());
   t.after(async () => {

@@ -117,11 +117,26 @@ const catalog = async () => ({
   ],
 });
 
+/** Host stub of the multi-active capture contract: one channel, served for every omitted channelId. */
+function mediaHost(baseURL) {
+  return {
+    capture: (channelId) => {
+      assert.equal(channelId, undefined, 'these single-channel tests never select a channel');
+      return {
+        connection: { channelId: 'default', baseURL, apiKeyName: 'NEWAPI_API_KEY', headers: {} },
+        requireApiKey: async () => 'sk-test',
+        catalog,
+      };
+    },
+    reportError() {},
+  };
+}
+
 test('image generation saves attachments and reports the model', async () => {
   const gw = fakeGateway();
   const base = await gw.listen();
   const f = fakeCtx();
-  registerMedia(f.ctx, { connection: () => ({ baseURL: `${base}/v1` }), catalog, requireApiKey: async () => 'sk-test', reportError() {} });
+  registerMedia(f.ctx, mediaHost(`${base}/v1`));
   const tool = f.tools.get('newapi_image_generate');
   const value = await tool.execute({ prompt: 'a gradient', size: '1024x1024' }, { signal: AbortSignal.timeout(5000), callId: 'c1' });
   assert.equal(value.model, 'gpt-image-2');
@@ -142,7 +157,7 @@ test('video: submit returns at once, poller completes, file is saved, job settle
   const gw = fakeGateway();
   const base = await gw.listen();
   const f = fakeCtx();
-  registerMedia(f.ctx, { connection: () => ({ baseURL: base }), catalog, requireApiKey: async () => 'sk-test', reportError() {} });
+  registerMedia(f.ctx, mediaHost(base));
   const submit = f.tools.get('newapi_video_generate');
   const t0 = Date.now();
   const value = await submit.execute({ prompt: 'a cat', seconds: 4 }, { signal: AbortSignal.timeout(5000), callId: 'c2', agent: { id: 'session-1' } });
@@ -170,12 +185,12 @@ test('video: restart resumes polling for an unfinished task', async () => {
   const base = await gw.listen();
   // First "process": submit, then stop before completion.
   const a = fakeCtx();
-  registerMedia(a.ctx, { connection: () => ({ baseURL: base }), catalog, requireApiKey: async () => 'sk-test', reportError() {} });
+  registerMedia(a.ctx, mediaHost(base));
   const v = await a.tools.get('newapi_video_generate').execute({ prompt: 'a dog' }, { signal: AbortSignal.timeout(5000), callId: 'c3' });
   a.dispose();
   // Second "process" reads the task file and resumes.
   const b = fakeCtx();
-  registerMedia(b.ctx, { connection: () => ({ baseURL: base }), catalog, requireApiKey: async () => 'sk-test', reportError() {} });
+  registerMedia(b.ctx, mediaHost(base));
   const done = await until(async () => {
     const s = await b.tools.get('newapi_video_status').execute({ taskId: v.taskId }, {});
     return s.tasks[0].status === 'completed';
@@ -192,7 +207,7 @@ test('video: a submission that times out is marked submit-unknown and never rese
   const base = await gw.listen();
   gw.setSubmitMode('hang');
   const f = fakeCtx();
-  registerMedia(f.ctx, { connection: () => ({ baseURL: base }), catalog, requireApiKey: async () => 'sk-test', reportError() {} });
+  registerMedia(f.ctx, mediaHost(base));
   const ac = new AbortController();
   setTimeout(() => ac.abort(new DOMException('timed out', 'TimeoutError')), 800);
   await assert.rejects(

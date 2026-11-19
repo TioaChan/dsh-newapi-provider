@@ -2,7 +2,7 @@
 
 English · [中文](README.zh.md)
 
-A New API gateway workbench for DeepSeek Harness: several gateways with one active at a time, per-gateway model lists and parameter overrides, quota, and image and experimental video generation.
+A New API gateway workbench for DeepSeek Harness: several gateways active at once, each on its own provider route, with per-gateway model lists and parameter overrides, quota, and image and experimental video generation.
 
 [![npm](https://img.shields.io/npm/v/dsh-newapi-provider.svg)](https://www.npmjs.com/package/dsh-newapi-provider)
 [![license](https://img.shields.io/npm/l/dsh-newapi-provider.svg)](LICENSE)
@@ -11,11 +11,9 @@ A New API gateway workbench for DeepSeek Harness: several gateways with one acti
 
 ## Preview
 
-| Model capabilities | Fetch models |
-| --- | --- |
-| ![Per-gateway model list with vendor marks, context/output limits, modalities and test results](docs/screenshots/models.png) | ![Fetch models dialog grouped by kind, with new / added / removed-upstream states](docs/screenshots/discover.png) |
-| **Model editor** | **Sidebar quota** |
-| ![Model editor: display name, upstream mapping, context window, output cap and input modalities](docs/screenshots/editor.png) | ![Active gateway's quota at the sidebar foot](docs/screenshots/sidebar.png) |
+| Model capabilities | Fetch models | Model editor |
+| --- | --- | --- |
+| ![Per-gateway model list with vendor marks, context/output limits, modalities and test results](docs/screenshots/models.png) | ![Fetch models dialog grouped by kind, with new / added / removed-upstream states](docs/screenshots/discover.png) | ![Model editor: display name, upstream mapping, context window, output cap and input modalities](docs/screenshots/editor.png) |
 
 The screenshots render this plugin's real components and stylesheet with sample data; gateway names, URLs and amounts are examples. The UI follows the DSH theme, so colours adapt to your skin and dark mode.
 
@@ -27,24 +25,30 @@ Install `dsh-newapi-provider` with DSH's plugin manager, then refresh the page a
 
 1. **Add gateway** — name, New API site URL, calling token.
 2. **Fetch models** — read what the gateway lists, select the ones you want.
-3. **Activate the gateway** — this plugin's model route now serves those models.
+3. **Use it** — the gateway is registered as its own provider route; its models appear in the DSH model picker.
 
 The token is stored in the DSH credential service, never in the gateway configuration, and is never sent back to the browser.
 
+## Upgrading from the single-active version
+
+The gateway that was active before the upgrade keeps the existing provider route id (`providerId`, default `newapi-provider`), so existing sessions and the configured default model keep working. The other gateways get the route id `newapi-provider-<channel id>` and appear as new provider groups in the model picker. The resolved route ids are written back into each channel's configuration on the next settings save, and the old `activeChannel` config pointer is retired then. As with `providerId` before, changing a route id orphans the sessions that used it.
+
 ## Features
 
-- Several gateways, exactly one active; each keeps its own URL, credential reference, model list and model overrides.
+- Several gateways active at once; each keeps its own URL, credential reference, model list and model overrides, and each registers as its own provider route.
 - Channel-scoped model management: fetch what a gateway lists, choose which models appear in DSH, test one model, remove with undo, add models the gateway does not list.
 - Capability data from models.dev (context window, output cap, modalities, reasoning), correctable per model, with an optional per-model upstream name mapping.
-- Token quota in the settings summary and at the sidebar foot, plus the account balance when the token is allowed to query it.
+- Token quota per gateway in the settings page, plus the account balance when the token is allowed to query it.
 - Image generation saved as durable DSH attachments with a generation history; experimental video through the unified `/v1/videos` interface with background polling and restart recovery.
 
 ## Gateways and quota
 
 1. **Test connection** reads the model list only and does not make paid model calls; it also shows the gateway version and model counts.
-2. **Activate** switches every subsequent call made through this plugin, or tick "activate after saving".
-3. Switching never rewrites other adapters or your default provider.
-4. Submitted video tasks keep their originating gateway and are never polled on a newly activated one.
+2. Every saved gateway is active at once. The model picker shows one provider group per gateway, named after that gateway's channel name. The settings page shows each gateway's provider route id.
+3. Each route serves its own base URL, token, headers, retry policy and model metadata; choosing a model sends calls to that gateway only. There is no load balancing or failover.
+4. Submitted video tasks keep their originating gateway and are never polled on another one.
+5. On upgrade, the gateway that was active keeps the existing route id, so its sessions and the configured default model keep working; the other gateways appear as new provider groups. See [Upgrading from the single-active version](#upgrading-from-the-single-active-version).
+6. Saving a gateway only writes this plugin's settings; other adapters and your default provider are unchanged.
 
 Quota details:
 
@@ -54,13 +58,13 @@ Quota details:
 - An unlimited token shows used quota instead of a meaningless negative remainder.
 - Both numbers are the site's own; a present catalog or balance does not prove an upstream channel can serve a model.
 
-The sidebar shows the active gateway's name and amount, with a health dot; click it to refresh. It collapses to a status dot when the sidebar is a rail.
+Every gateway's token and account balance is read and shown on its own card in the settings page.
 
 ## Per-gateway model lists
 
 Each gateway keeps an independent list, even when two gateways point at the same site with the same token:
 
-- **Model capabilities tab** has a gateway picker; the active gateway is marked and its list edits apply to that gateway only.
+- **Model capabilities tab** has a gateway picker; the selected gateway is marked, and its model list, enabled-model list, overrides and tests apply to that gateway only.
 - **Fetch models** reads the gateway catalog with a search box plus status (new / added / removed upstream) and kind filters, grouped by kind; filtering only changes what is listed, never the current selection. The list scrolls on its own and the action bar stays in view.
 - **Remove** only removes the model from this gateway; custom parameters can be kept and the removal can be undone briefly.
 - **Add manually** is for models the gateway can serve but does not list.
@@ -117,11 +121,11 @@ The DSH chat interface currently accepts text and image input only. PDF, audio a
 
 | Tool | Purpose |
 | --- | --- |
-| `newapi_balance` | Quota of the active gateway's token (and account, when allowed). Free. |
-| `newapi_models` | Models of a gateway (`channelId` optional, defaults to active) with kind, limits, modalities, pricing, mapping. Free. |
-| `newapi_channels` | `list`, `test`, `save`, `activate`, `delete`, `model_override`, `models_discover`, `models_set`, `model_test`. Writes need a revision. |
-| `newapi_image_generate` | Text-to-image, or image editing when `inputImages` is given. Saves attachments. |
-| `newapi_video_generate` | Submits a video task and returns its id. Billed per task. |
+| `newapi_balance` | Quota of every gateway's token (and account, when allowed); pass `channelId` for one gateway. Free. |
+| `newapi_models` | Models of one gateway (`channelId` optional, defaults to the first channel) with kind, limits, modalities, pricing, mapping. Free. |
+| `newapi_channels` | `list`, `test`, `save`, `delete`, `model_override`, `models_discover`, `models_set`, `model_test`; `list` returns each channel's `providerId`. Writes need a revision. |
+| `newapi_image_generate` | Text-to-image, or image editing when `inputImages` is given; optional `channelId` (first channel when omitted). Saves attachments. |
+| `newapi_video_generate` | Submits a video task to an optional `channelId` (first channel when omitted) and returns its id; the task keeps its origin gateway. Billed per task. |
 | `newapi_video_status` | Lists or checks video tasks and returns the saved file. |
 
 Settings-page actions and these tools share one service, so nothing can drift between the UI and the agent.

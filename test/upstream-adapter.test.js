@@ -37,7 +37,9 @@ class PiAiAdapter {
 for (const endpoint of ['openai', 'openai-response', 'anthropic', 'gemini']) test(`adapter ${endpoint}: wire mapping preserves prepared identity and durable local replay`, async () => {
   const { NewApiAdapter } = await loadAdapter();
   let target = 'remote-one';
-  const adapter = new NewApiAdapter({ capture() {
+  const adapter = new NewApiAdapter({ capture(provider) {
+    // Route-based host API: each call binds the provider route it was made for.
+    assert.equal(provider, 'studio');
     const upstreamModel = target;
     return { connection: { providerId: 'studio', baseURL: 'https://offline.invalid', displayName: 'Test', headers: {} }, requireApiKey: async () => 'fake', catalog: async () => ({ entries: [{ id: 'local', upstreamModel, name: 'Display only', kind: 'chat', input: ['text'], endpointTypes: [endpoint], source: { overridden: [] } }] }) };
   } });

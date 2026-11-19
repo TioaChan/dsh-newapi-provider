@@ -174,7 +174,7 @@ test('chat test over each protocol reports latency and first packet, using the c
     assert.equal(r.outputPreview, 'OK');
     const call = gw.calls.at(-1);
     assert.equal(call.url, url);
-    assert.equal(call.auth, 'Bearer sk-b', 'uses the tested channel\'s key, not the active one');
+    assert.equal(call.auth, 'Bearer sk-b', 'uses the tested channel\'s key, not another channel\'s');
   }
   assert.equal(t.last('b', 'oa').ok, true, 'result remembered for the settings page');
   assert.equal(t.last('b', 'oa').outputPreview, undefined, 'stored result omits preview text');

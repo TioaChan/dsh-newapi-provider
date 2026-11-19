@@ -25,7 +25,7 @@ test('mapped media JSON, image edits, video multipart and settings test; restart
   const original = globalThis.fetch; t.after(() => { globalThis.fetch = original; });
   const calls = [];
   globalThis.fetch = async (url, options) => {
-    assert.ok(url.startsWith('https://original.invalid/'));
+    assert.ok(url.startsWith('https://original.invalid/'), 'must keep contacting the originating channel');
     assert.equal(options.headers.authorization, 'Bearer fake-original');
     const body = options.body instanceof FormData ? Object.fromEntries(options.body) : options.body ? JSON.parse(options.body) : undefined;
     calls.push({ url, body });
@@ -34,10 +34,11 @@ test('mapped media JSON, image edits, video multipart and settings test; restart
     if (url.endsWith('/content')) return new Response(Buffer.alloc(2048), { headers: { 'content-type': 'video/mp4' } });
     return Response.json({ status: 'completed' });
   };
-  let active = 'original', videoTarget = 'remote-video';
+  let videoTarget = 'remote-video';
   const channels = [{ id: 'original', baseURL: 'https://original.invalid', apiKeyEnv: 'ORIGINAL' }, { id: 'other', baseURL: 'https://other.invalid', apiKeyEnv: 'OTHER' }];
-  const bound = ch => ({ connection: { channelId: ch.id, baseURL: ch.baseURL, apiKeyName: ch.apiKeyEnv }, requireApiKey: async () => `fake-${ch.id}`, catalog: async () => ({ entries: [{ id: 'image-alias', upstreamModel: 'remote-image', kind: 'image' }, { id: 'video-alias', upstreamModel: videoTarget, kind: 'video' }] }) });
-  const host = { capture: () => bound(channels.find(ch => ch.id === active)), captureTask: task => bound(taskChannel(task, channels)), reportError() {} };
+  const bound = ch => ({ connection: { channelId: ch.id, baseURL: ch.baseURL, apiKeyName: ch.apiKeyEnv, headers: {} }, requireApiKey: async () => `fake-${ch.id}`, catalog: async () => ({ entries: [{ id: 'image-alias', upstreamModel: 'remote-image', kind: 'image' }, { id: 'video-alias', upstreamModel: videoTarget, kind: 'video' }] }) });
+  // Multi-active contract: no channelId means the first channel; another route is never guessed from an "active" pointer.
+  const host = { capture: (channelId) => bound(channelId ? channels.find(ch => ch.id === channelId) : channels[0]), captureTask: task => bound(taskChannel(task, channels)), reportError() {} };
   const first = context(); const media = registerMedia(first.ctx, host); t.after(() => first.dispose());
   const exec = { signal: AbortSignal.timeout(10000), callId: 'offline' };
   for (const inputImages of [undefined, ['reference.png']]) {
@@ -49,10 +50,12 @@ test('mapped media JSON, image edits, video multipart and settings test; restart
     const result = await first.tools.get('newapi_video_generate').execute({ model: 'video-alias', prompt: 'offline', firstFrame }, exec);
     assert.equal(result.model, 'video-alias'); assert.equal(result.upstreamModel, 'remote-video'); assert.equal(calls.at(-1).body.model, 'remote-video'); tasks.push(result.taskId);
   }
-  const tested = await media.submitTestVideo('original', 'video-alias', host.capture()); tasks.push(tested.taskId);
+  const tested = await media.submitTestVideo('original', 'video-alias', host.capture('original')); tasks.push(tested.taskId);
   assert.equal(calls.at(-1).body.model, 'remote-video');
   assert.equal(media.status().history[0].model, 'video-alias'); assert.equal(media.status().history[0].upstreamModel, 'remote-video');
-  await first.dispose(); active = 'other'; videoTarget = 'changed-after-submit';
+  // Restart with a different first channel (the old "active" channel changed):
+  // polling still binds each task to its recorded origin gateway and key.
+  await first.dispose(); channels.reverse(); assert.equal(channels[0].id, 'other'); videoTarget = 'changed-after-submit';
   const resumed = context(); registerMedia(resumed.ctx, host); t.after(() => resumed.dispose());
   for (const taskId of tasks) {
     const { tasks: [task] } = await resumed.tools.get('newapi_video_status').execute({ taskId });

@@ -30,17 +30,17 @@ test('invalidated in-flight catalog cannot repopulate a newer cache', async () =
 
 test('balance captures base and credential together before awaiting credential resolution', async (t) => {
   const originalFetch = globalThis.fetch; t.after(() => { globalThis.fetch = originalFetch; });
-  const gate = deferred(); let active = 'a'; const calls = [];
+  const gate = deferred(); let target = 'a'; const calls = [];
   globalThis.fetch = async (url, options) => {
     calls.push({ url, key: options.headers.authorization });
     const data = url.endsWith('/api/status') ? { quota_per_unit: 1, quota_display_type: 'TOKENS' } : { total_available: 12, total_used: 3, total_granted: 15 };
     return new Response(JSON.stringify({ data }), { status: 200, headers: { 'content-type': 'application/json' } });
   };
   const svc = new BalanceService({ capture: () => {
-    const captured = active;
+    const captured = target;
     return { connection: { baseURL: `https://${captured}.example` }, requireApiKey: async () => { await gate.promise; return `key-${captured}`; } };
   } });
-  const pending = svc.refresh(); active = 'b'; gate.resolve();
+  const pending = svc.refresh(); target = 'b'; gate.resolve();
   const value = await pending;
   assert.equal(value.token.remaining, 12);
   assert.equal(calls.length, 2);
@@ -74,22 +74,97 @@ class PiAiAdapter {
   return (await import(`data:text/javascript;base64,${Buffer.from(prefix + source).toString('base64')}`)).NewApiAdapter;
 }
 
-test('adapter prepared stream stays on original channel after activation switch; concurrent call uses new channel', async () => {
-  const Adapter = await adapterUnderTest(); let active = 'a'; const gate = deferred();
-  const host = { connection: () => ({ displayName: active }), capture: () => {
-    const id = active;
+/**
+ * Host stub with one immutable channel per provider route, like the real host:
+ * `connection(providerId)` and `capture(providerId)` resolve that route only.
+ * A capture snapshots the route facts before any await, so a later settings
+ * change (address, token) must not leak into an in-flight call.
+ */
+async function adapterFixture(routes) {
+  const errors = [];
+  const snapshotOf = (provider) => {
+    const route = routes[provider];
+    if (!route) throw new Error(`no channel is registered for route "${provider}"`);
+    // Copy now: the live config may change while the call awaits its key/catalog.
+    const snapshot = { ...route, entries: route.entries?.map((entry) => ({ ...entry })) };
     return {
-      connection: { channelId: id, providerId: 'newapi-provider', displayName: id, baseURL: `https://${id}.example`, endpointPriority: ['openai'], headers: {}, apiKeyRef: id },
-      requireApiKey: async () => { if (id === 'a') await gate.promise; return `key-${id}`; },
-      catalog: async () => ({ entries: [{ id: 'm', name: id, kind: 'chat', input: ['text'], endpointTypes: ['openai'], source: { overridden: [] } }] }),
+      connection: {
+        channelId: route.channelId, providerId: provider, displayName: route.displayName,
+        baseURL: route.baseURL, headers: {}, endpointPriority: ['openai'], apiKeyRef: provider,
+        retryPolicy: route.retryPolicy,
+      },
+      requireApiKey: async () => {
+        if (snapshot.gate) await snapshot.gate.promise;
+        if (snapshot.keyError) throw snapshot.keyError;
+        return snapshot.key;
+      },
+      catalog: async () => {
+        if (snapshot.catalogError) throw snapshot.catalogError;
+        return { entries: snapshot.entries ?? [] };
+      },
     };
-  } };
-  const adapter = new Adapter(host);
-  const preparing = adapter.prepareCall('newapi-provider', 'm');
-  active = 'b';
-  const next = await adapter.prepareCall('newapi-provider', 'm');
-  gate.resolve(); const original = await preparing;
-  const collect = async (call) => { const result = []; for await (const item of call.stream({ provider: 'newapi-provider', model: 'm' })) result.push(item); return result[0]; };
-  assert.deepEqual(await collect(original), { url: 'https://a.example/v1', key: 'key-a', name: 'a' });
-  assert.deepEqual(await collect(next), { url: 'https://b.example/v1', key: 'key-b', name: 'b' });
+  };
+  const host = {
+    connection: (provider) => snapshotOf(provider).connection,
+    capture: (provider) => snapshotOf(provider),
+    reportError: (scope, error) => errors.push({ scope, error }),
+  };
+  const Adapter = await adapterUnderTest();
+  return { adapter: new Adapter(host), errors };
+}
+
+const entry = (id, name) => ({ id, name, kind: 'chat', input: ['text'], endpointTypes: ['openai'], source: { overridden: [] } });
+
+test('prepared adapter streams stay on their own route while live config changes; a concurrent route uses its own channel', async () => {
+  const gate = deferred();
+  const routes = {
+    'newapi-provider': { channelId: 'a', displayName: 'Channel A', baseURL: 'https://a.example', key: 'key-a', gate, entries: [entry('m-a', 'Model A')] },
+    'newapi-provider-b': { channelId: 'b', displayName: 'Channel B', baseURL: 'https://b.example', key: 'key-b', entries: [entry('m-b', 'Model B')] },
+  };
+  const { adapter } = await adapterFixture(routes);
+  const preparing = adapter.prepareCall('newapi-provider', 'm-a');
+  // The settings write that lands while route A is still preparing:
+  // a different address and a rotated token for that same channel.
+  routes['newapi-provider'].baseURL = 'https://a-changed.example';
+  routes['newapi-provider'].key = 'key-a-rotated';
+  const next = await adapter.prepareCall('newapi-provider-b', 'm-b');
+  gate.resolve();
+  const original = await preparing;
+  // Metadata resolves against the route the call was created for, not a shared one.
+  assert.deepEqual(original.model, { provider: 'newapi-provider', id: 'm-a' });
+  assert.deepEqual(next.model, { provider: 'newapi-provider-b', id: 'm-b' });
+  assert.deepEqual(await adapter.resolveModel('newapi-provider-b', 'm-b'), { provider: 'newapi-provider-b', id: 'm-b' });
+  const collect = async (call, provider, model) => { const result = []; for await (const item of call.stream({ provider, model })) result.push(item); return result[0]; };
+  assert.deepEqual(await collect(original, 'newapi-provider', 'm-a'), { url: 'https://a.example/v1', key: 'key-a', name: 'Model A' });
+  assert.deepEqual(await collect(next, 'newapi-provider-b', 'm-b'), { url: 'https://b.example/v1', key: 'key-b', name: 'Model B' });
+  // A stream binds the route named in options, never a global active channel.
+  const fresh = []; for await (const item of adapter.stream({ provider: 'newapi-provider-b', model: 'm-b' })) fresh.push(item);
+  assert.deepEqual(fresh[0], { url: 'https://b.example/v1', key: 'key-b', name: 'Model B' });
+});
+
+test('listModels, providerInfo and providerRetryPolicy resolve the route they are asked about', async () => {
+  const retryPolicy = { maxAttempts: 3, backoffMs: 250 };
+  const routes = {
+    'newapi-provider': { channelId: 'a', displayName: 'Channel A', baseURL: 'https://a.example', key: 'key-a', retryPolicy, entries: [entry('a-chat', 'A chat')] },
+    'newapi-provider-b': { channelId: 'b', displayName: 'Channel B', baseURL: 'https://b.example', key: 'key-b', retryPolicy: undefined, entries: [entry('b-chat', 'B chat')] },
+  };
+  const { adapter, errors } = await adapterFixture(routes);
+  assert.deepEqual(await adapter.listModels('newapi-provider'), [{ provider: 'newapi-provider', id: 'a-chat', name: 'A chat', inputModalities: ['text'] }]);
+  assert.deepEqual(await adapter.listModels('newapi-provider-b'), [{ provider: 'newapi-provider-b', id: 'b-chat', name: 'B chat', inputModalities: ['text'] }]);
+  // An unknown route is empty, never another channel's catalog.
+  assert.deepEqual(await adapter.listModels('missing-route'), []);
+  assert.deepEqual(adapter.providerInfo('newapi-provider'), { id: 'newapi-provider', name: 'Channel A' });
+  assert.deepEqual(adapter.providerInfo('newapi-provider-b'), { id: 'newapi-provider-b', name: 'Channel B' });
+  assert.deepEqual(adapter.providerInfo('missing-route'), { id: 'missing-route', name: 'missing-route' });
+  assert.deepEqual(adapter.providerRetryPolicy('newapi-provider'), retryPolicy);
+  assert.equal(adapter.providerRetryPolicy('newapi-provider-b'), undefined);
+  assert.equal(adapter.providerRetryPolicy('missing-route'), undefined);
+  // A catalog failure is reported against that route's channel and yields no models.
+  routes['newapi-provider'].catalogError = new Error('gateway down');
+  assert.deepEqual(await adapter.listModels('newapi-provider'), []);
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0].scope, 'catalog:a');
+  assert.match(errors[0].error.message, /gateway down/);
+  // Route B is unaffected by route A's outage.
+  assert.deepEqual(await adapter.listModels('newapi-provider-b'), [{ provider: 'newapi-provider-b', id: 'b-chat', name: 'B chat', inputModalities: ['text'] }]);
 });

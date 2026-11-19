@@ -1,4 +1,4 @@
-/** New API Provider: native, theme-aware settings with one active gateway. */
+/** New API Provider: native, theme-aware settings for several simultaneously enabled gateways. */
 window.__ModuleLoader__.load({
   id: 'dsh-newapi-provider',
   factory(require) {
@@ -9,34 +9,33 @@ window.__ModuleLoader__.load({
     const ZH = {
       nav: 'New API 提供商', title: 'New API Provider', subtitle: '管理你的模型网关、额度与生成能力。',
       refresh: '同步数据', refreshing: '同步中…', add: '添加渠道', channels: '渠道与连接', models: '模型能力', media: '生成记录',
-      channelHint: '同一时间只激活一个渠道，模型、额度和生成工具随之切换；已提交的视频任务仍由原渠道处理。', activateShort: '激活', activeTip: '当前激活的渠道', inactiveTip: '未激活的渠道', healthOk: '连接正常，额度已同步',
+      channelHint: '所有渠道同时启用；每个渠道都按渠道名在模型选择器里显示为独立的提供商分组。模型清单、覆盖参数、额度与生成能力跟随所选渠道。', healthOk: '连接正常，额度已同步',
       healthNoKey: '尚未设置令牌', healthBad: '连接异常', healthStale: '额度数据已过期', healthUnknown: '尚未检测',
-      activateTip: '切换到这个渠道', channelTestTip: '测试连接（只读取模型目录，不产生费用）', editChannelTip: '编辑渠道设置', removeChannelTip: '删除这个渠道',
+      channelTestTip: '测试连接（只读取模型目录，不产生费用）', editChannelTip: '编辑渠道设置', removeChannelTip: '删除这个渠道',
       modelTestChatTip: '测试此模型（发送一次极短请求，会产生少量费用）', modelTestPaidTip: '测试此模型（会实际生成，需二次确认）',
-      modelsOfChannel: '渠道', viewingInactive: '正在查看未激活渠道的模型清单。编辑会保存到该渠道，但对话中使用的仍是当前激活渠道。',
+      modelsOfChannel: '渠道',
       channelModelsHint: '每个渠道独立维护自己的模型清单和参数。', loadingModels: '正在读取该渠道的模型…', modelsLoadFailed: '读取模型失败',
-      active: '使用中', inactive: '未激活', activate: '激活此渠道', edit: '编辑', remove: '删除', cancel: '取消', confirmRemove: '确认删除',
+      enabled: '已启用', edit: '编辑', remove: '删除', cancel: '取消', confirmRemove: '确认删除',
       deleteHint: '只移除渠道配置；不会删除凭据或上游账号。', lastChannel: '至少保留一个渠道',
-      activateHint: '切换会影响所有使用此插件的会话；已经提交的视频任务仍由原渠道处理。',
-      currentChannel: '当前激活渠道', tokenUsed: '令牌累计已用', tokenRemaining: '令牌剩余额度', accountBalance: '账户剩余额度',
+      tokenUsed: '令牌累计已用', tokenRemaining: '令牌剩余额度', accountBalance: '账户剩余额度',
       unlimited: '令牌额度不限', totalModels: '可发现模型', chat: '对话', image: '生图', video: '视频', audio: '音频', embedding: '向量', other: '其他',
       all: '全部', text: '文本', pdf: 'PDF', inputImage: '图片', inputVideo: '视频', inputAudio: '音频',
       credentialSet: '凭据已设置', credentialMissing: '未设置凭据', failed: '连接异常', loading: '正在加载…', retry: '重试',
-      sidebarBalanceHint: '点击刷新额度',
       loadFailed: '无法读取渠道数据', loadFailedHint: '如果刚重启过 DSH，请确认插件已加载后再试。',
-      cached: '已缓存', balanceUnavailable: '额度暂不可用', notFetched: '待查询', used: '已用', remaining: '剩余',
+      cached: '已缓存', balanceUnavailable: '额度暂不可用', used: '已用', remaining: '剩余',
       accountHint: '想看账户总余额？请在 New API 令牌设置中打开「允许查询用户额度」。',
-      activeName: '渠道', route: '模型路由', unknown: '未知', save: '保存', saving: '保存中…',
+      route: '模型路由', unknown: '未知', save: '保存', saving: '保存中…',
+      providerRoute: '模型路由', routePending: '路由待注册', routesCount: '个路由', routeDirectory: '路由目录', modelsUnit: '个模型', modelCountTip: '该渠道当前启用的模型数',
       newChannel: '添加 New API 渠道', editChannel: '编辑渠道', channelName: '渠道名称', channelNamePlaceholder: '例如：主力站点、备用网关',
       address: '网关地址', addressHint: '支持填写站点根地址，或以 /v1 结尾的地址。',
       apiKey: 'API 令牌', keyPlaceholder: 'sk-…', keyUnchanged: '留空则继续使用已有凭据',
-      keyHint: '只写入 DSH 凭据库，不回显、不存进渠道配置。', activateOnSave: '保存后激活此渠道',
+      keyHint: '只写入 DSH 凭据库，不回显、不存进渠道配置。',
       connectionSection: '连接信息', credentialSection: '访问凭据', keyRequiredForAddress: '网关地址已修改：为安全起见，需要重新填写此网关的令牌。',
       keyWillReplace: '保存后将替换为新令牌', showKey: '显示', hideKey: '隐藏',
       testConnection: '测试连接', testing: '测试中…', testPassed: '连接成功', testHint: '仅查询模型目录，不产生模型调用费用。',
-      editHint: '每个渠道独立保存地址、凭据及模型覆盖参数。', newHint: '用已有 New API 站点的地址和调用令牌连接。',
-      conflict: '配置已被其他窗口修改。请关闭编辑框并刷新后重试。', saved: '已保存渠道', activated: '已切换激活渠道', removed: '已移除渠道',
-      filter: '按名称或供应商搜索', modelsHint: '以下目录属于当前激活渠道。能力信息来自 models.dev，并不保证中转站实际支持；可按模型校正。',
+      editHint: '每个渠道独立保存地址、凭据及模型覆盖参数，且所有渠道同时启用。', newHint: '用已有 New API 站点的地址和调用令牌连接；保存后立即启用。',
+      conflict: '配置已被其他窗口修改。请关闭编辑框并刷新后重试。', saved: '已保存渠道', removed: '已移除渠道',
+      filter: '按名称或供应商搜索', modelsHint: '以下目录属于所选渠道。能力信息来自 models.dev，并不保证中转站实际支持；可按模型校正。',
       namingSection: '名称与映射', capacitySection: '容量与能力', advancedOptions: '高级选项',
       localModelId: '本地模型 ID', upstreamModel: '上游映射模型名', upstreamHint: '实际发送给网关的 model。留空使用本地模型 ID，不会重命名现有会话。',
       displayNameHint: '只改变 DSH 中的显示，不影响实际请求。', mappingPreview: '实际请求', mapped: '已映射', noMapping: '未映射 · 使用原 ID',
@@ -99,34 +98,33 @@ window.__ModuleLoader__.load({
     const EN = {
       nav: 'New API Provider', title: 'New API Provider', subtitle: 'Your model gateways, quota and creative tools, in one place.',
       refresh: 'Sync data', refreshing: 'Syncing…', add: 'Add gateway', channels: 'Gateways', models: 'Model capabilities', media: 'Generations',
-      channelHint: 'One gateway is active at a time; models, balance and generation tools follow it. Submitted videos stay on their original gateway.', activateShort: 'Activate', activeTip: 'Active gateway', inactiveTip: 'Not active', healthOk: 'Connected; quota is up to date',
+      channelHint: 'Every gateway is enabled at once; each one appears in the model picker as its own provider group, named after the gateway. Model lists, overrides, quota and generation follow the selected gateway.', healthOk: 'Connected; quota is up to date',
       healthNoKey: 'No token stored yet', healthBad: 'Connection problem', healthStale: 'Quota data is stale', healthUnknown: 'Not checked yet',
-      activateTip: 'Switch to this gateway', channelTestTip: 'Test connection (reads the model list only; no charge)', editChannelTip: 'Edit gateway settings', removeChannelTip: 'Remove this gateway',
-      modelsOfChannel: 'Gateway', viewingInactive: 'Viewing an inactive gateway\'s model list. Edits are saved to that gateway; chats still use the active one.',
+      channelTestTip: 'Test connection (reads the model list only; no charge)', editChannelTip: 'Edit gateway settings', removeChannelTip: 'Remove this gateway',
+      modelsOfChannel: 'Gateway',
       channelModelsHint: 'Each gateway keeps its own model list and parameters.', loadingModels: 'Reading this gateway\'s models…', modelsLoadFailed: 'Could not read models',
       modelTestChatTip: 'Test this model (one tiny request; a small charge)', modelTestPaidTip: 'Test this model (real generation; asks to confirm)',
-      active: 'Active', inactive: 'Inactive', activate: 'Activate', edit: 'Edit', remove: 'Remove', cancel: 'Cancel', confirmRemove: 'Remove gateway',
+      enabled: 'Enabled', edit: 'Edit', remove: 'Remove', cancel: 'Cancel', confirmRemove: 'Remove gateway',
       deleteHint: 'Removes configuration only, not the credential or upstream account.', lastChannel: 'Keep at least one gateway',
-      activateHint: 'Switching affects every session using this plugin. Submitted videos keep their original gateway.',
-      currentChannel: 'Active gateway', tokenUsed: 'Token total used', tokenRemaining: 'Token quota remaining', accountBalance: 'Account balance',
+      tokenUsed: 'Token total used', tokenRemaining: 'Token quota remaining', accountBalance: 'Account balance',
       unlimited: 'Unlimited token', totalModels: 'Discovered models', chat: 'Chat', image: 'Image', video: 'Video', audio: 'Audio', embedding: 'Embedding', other: 'Other',
       all: 'All', text: 'Text', pdf: 'PDF', inputImage: 'Image', inputVideo: 'Video', inputAudio: 'Audio',
       credentialSet: 'Credential set', credentialMissing: 'No credential', failed: 'Connection issue', loading: 'Loading…', retry: 'Retry',
-      sidebarBalanceHint: 'Click to refresh the quota',
       loadFailed: 'Could not read gateway data', loadFailedHint: 'If DSH was just restarted, make sure the plugin is loaded and try again.',
-      cached: 'Cached', balanceUnavailable: 'Quota unavailable', notFetched: 'Not queried', used: 'Used', remaining: 'Remaining',
+      cached: 'Cached', balanceUnavailable: 'Quota unavailable', used: 'Used', remaining: 'Remaining',
       accountHint: 'To see account balance, enable “Allow user quota query” in the token settings on New API.',
-      activeName: 'Gateway', route: 'Model route', unknown: 'Unknown', save: 'Save', saving: 'Saving…',
+      route: 'Model route', unknown: 'Unknown', save: 'Save', saving: 'Saving…',
+      providerRoute: 'Model route', routePending: 'Route pending', routesCount: 'routes', routeDirectory: 'Route directory', modelsUnit: 'models', modelCountTip: 'Models currently active on this gateway',
       newChannel: 'Add New API gateway', editChannel: 'Edit gateway', channelName: 'Gateway name', channelNamePlaceholder: 'Primary, backup…',
       address: 'Gateway URL', addressHint: 'Use the site root or an address ending in /v1.',
       apiKey: 'API token', keyPlaceholder: 'sk-…', keyUnchanged: 'Leave blank to keep the stored credential',
-      keyHint: 'Stored only in DSH credentials. Never echoed or saved in gateway configuration.', activateOnSave: 'Activate after saving',
+      keyHint: 'Stored only in DSH credentials. Never echoed or saved in gateway configuration.',
       connectionSection: 'Connection', credentialSection: 'Credential', keyRequiredForAddress: 'The gateway address changed. For safety, enter this gateway\'s token again.',
       keyWillReplace: 'The new token replaces the stored one on save', showKey: 'Show', hideKey: 'Hide',
       testConnection: 'Test connection', testing: 'Testing…', testPassed: 'Connected', testHint: 'Queries the model list only; no paid model call.',
-      editHint: 'Each gateway keeps its own URL, credential and model overrides.', newHint: 'Connect with your existing New API site URL and token.',
-      conflict: 'Another window changed the configuration. Close the editor and refresh before retrying.', saved: 'Gateway saved', activated: 'Active gateway changed', removed: 'Gateway removed',
-      filter: 'Search model or vendor', modelsHint: 'Models belong to the active gateway. models.dev metadata does not guarantee upstream support; correct it per model as needed.',
+      editHint: 'Each gateway keeps its own URL, credential and model overrides, and all gateways are enabled at once.', newHint: 'Connect with your existing New API site URL and token; it takes effect immediately.',
+      conflict: 'Another window changed the configuration. Close the editor and refresh before retrying.', saved: 'Gateway saved', removed: 'Gateway removed',
+      filter: 'Search model or vendor', modelsHint: 'The catalog below belongs to the selected gateway. models.dev metadata does not guarantee upstream support; correct it per model as needed.',
       namingSection: 'Naming & mapping', capacitySection: 'Limits & capabilities', advancedOptions: 'Advanced options',
       localModelId: 'Local model ID', upstreamModel: 'Upstream model name', upstreamHint: 'The model sent to the gateway. Leave blank to use the local ID; existing sessions keep their model identity.',
       displayNameHint: 'Changes the DSH label only, not the request.', mappingPreview: 'Request target', mapped: 'Mapped', noMapping: 'No mapping · original ID',
@@ -287,12 +285,11 @@ window.__ModuleLoader__.load({
       .nas{--nas-line:var(--dsw-alias-border-l1);--nas-text:var(--dsw-alias-label-primary);--nas-sub:var(--dsw-alias-label-secondary);--nas-bg:var(--dsw-alias-bg-layer-1);--nas-raised:var(--dsw-alias-bg-layer-2);--nas-brand:var(--dsw-alias-brand-primary);--nas-accent:#2f6feb;color:var(--nas-text);font:inherit;font-size:13px;line-height:1.55;width:100%;min-width:0;box-sizing:border-box}
       .nas *{box-sizing:border-box}.nas button,.nas input,.nas select{font:inherit}.nas button{cursor:pointer}.nas button:disabled{cursor:default;opacity:.55}.nas button:focus-visible,.nas input:focus-visible,.nas select:focus-visible,.nas [tabindex]:focus-visible{outline:2px solid var(--nas-brand);outline-offset:3px}
       .nas-page{padding:4px 2px 28px;max-width:1080px;margin:0 auto}.nas-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.nas-head h2{font-size:23px;line-height:1.3;font-weight:650;letter-spacing:-.6px;margin:0 0 6px}.nas-sub{color:var(--nas-sub);font-size:12px}.nas-eyebrow{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.09em;color:var(--nas-sub);margin-bottom:7px}.nas-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.nas-btn{min-height:32px;border:1px solid var(--nas-line);background:var(--nas-bg);color:var(--nas-text);padding:5px 11px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.4;white-space:nowrap;transition:background .12s,border-color .12s}.nas-btn:hover{background:var(--nas-raised);border-color:var(--dsw-alias-border-l2)}.nas-btn.primary{background:var(--nas-brand);border-color:var(--nas-brand);color:var(--dsw-alias-bg-base)}.nas-btn.primary:hover{opacity:.9}.nas-btn.ghost{background:transparent}.nas-btn.danger{color:var(--dsw-alias-state-error-primary)}.nas-btn.small{min-height:28px;font-size:12px;padding:3px 9px}.nas-icon-btn{padding:5px;min-width:29px}
-      .nas-summary{display:grid;grid-template-columns:1.1fr 1fr .85fr;border:1px solid var(--nas-line);border-radius:11px;background:var(--nas-bg);margin-bottom:22px;overflow:hidden}.nas-stat{padding:16px 19px;min-width:0}.nas-stat+.nas-stat{border-left:1px solid var(--nas-line)}.nas-stat-label{font-size:11px;color:var(--nas-sub);margin-bottom:7px}.nas-stat-value{font-size:21px;font-variant-numeric:tabular-nums;line-height:1.3;letter-spacing:-.4px;overflow-wrap:anywhere}.nas-stat-value.name{font-size:17px;font-weight:600}.nas-stat-foot{font-size:11px;color:var(--nas-sub);margin-top:5px;overflow-wrap:anywhere}
       .nas-tabs{display:flex;gap:24px;border-bottom:1px solid var(--nas-line);margin-bottom:18px}.nas-tab{display:flex;align-items:center;gap:7px;padding:10px 1px 12px;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--nas-sub);font-weight:500}.nas-tab.selected{color:var(--nas-text);border-bottom-color:var(--nas-brand)}.nas-count{font-size:10px;min-width:18px;padding:0 5px;background:var(--nas-raised);border-radius:4px;color:var(--nas-sub);font-variant-numeric:tabular-nums}.nas-section-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 15px}.nas-section-intro p{margin:0;color:var(--nas-sub);font-size:12px;max-width:660px}
-      .nas-channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}.nas-channel{position:relative;border:1px solid var(--nas-line);border-radius:10px;background:var(--nas-bg);padding:16px;min-width:0;display:flex;flex-direction:column;gap:13px}.nas-channel.is-active{border-color:var(--nas-brand);box-shadow:inset 3px 0 var(--nas-brand)}.nas-channel-top{display:flex;align-items:center;gap:10px}.nas-channel-mark{width:34px;height:34px;border-radius:8px;background:var(--nas-raised);color:var(--nas-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0}.nas-channel.is-active .nas-channel-mark{color:var(--nas-brand)}.nas-channel-title{flex:1;min-width:0}.nas-channel-title strong{font-size:14px;font-weight:600;display:block;overflow-wrap:anywhere}.nas-url{font-size:11px;color:var(--nas-sub);overflow-wrap:anywhere;line-height:1.5}.nas-channel-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:11px;color:var(--nas-sub)}.nas-dot{width:5px;height:5px;border-radius:50%;background:var(--nas-sub);display:inline-block;flex-shrink:0}.nas-dot.ok{background:var(--dsw-alias-state-success-primary)}.nas-dot.warn{background:var(--dsw-alias-state-warn-primary)}.nas-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;line-height:18px;border-radius:4px;padding:0 6px;background:var(--nas-raised);color:var(--nas-sub);white-space:nowrap}.nas-badge.active{color:var(--nas-brand);background:color-mix(in srgb,var(--nas-brand) 9%,transparent)}.nas-badge.warn{color:var(--dsw-alias-state-warn-primary)}.nas-badge.good{color:var(--dsw-alias-state-success-primary)}.nas-badge.error{color:var(--dsw-alias-state-error-primary)}.nas-channel-quota{font-size:19px;letter-spacing:-.3px;font-variant-numeric:tabular-nums}.nas-channel-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--nas-line);padding-top:12px;margin-top:auto;gap:10px}.nas-note{display:flex;gap:7px;align-items:flex-start;color:var(--nas-sub);font-size:11px;line-height:1.6;margin-top:14px}.nas-note svg{flex-shrink:0;margin-top:2px}.nas-empty{padding:36px 20px;border:1px dashed var(--nas-line);border-radius:10px;text-align:center;color:var(--nas-sub);font-size:13px}.nas-empty svg{display:block;margin:0 auto 10px}.nas-empty strong{display:block;color:var(--nas-text);font-weight:500;margin:8px 0}.nas-error{border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 30%,transparent);color:var(--dsw-alias-state-error-primary);background:var(--nas-bg);padding:10px 12px;border-radius:7px;font-size:12px;overflow-wrap:anywhere;white-space:pre-wrap}.nas-feedback{display:flex;align-items:center;gap:7px;border:1px solid var(--nas-line);padding:9px 12px;border-radius:7px;color:var(--dsw-alias-state-success-primary);font-size:12px;margin-bottom:15px}
+      .nas-channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}.nas-channel{position:relative;border:1px solid var(--nas-line);border-radius:10px;background:var(--nas-bg);padding:16px;min-width:0;display:flex;flex-direction:column;gap:13px}.nas-channel-top{display:flex;align-items:center;gap:10px}.nas-channel-mark{width:34px;height:34px;border-radius:8px;background:var(--nas-raised);color:var(--nas-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0}.nas-channel-title{flex:1;min-width:0}.nas-channel-title strong{font-size:14px;font-weight:600;display:block;overflow-wrap:anywhere}.nas-url{font-size:11px;color:var(--nas-sub);overflow-wrap:anywhere;line-height:1.5}.nas-channel-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:11px;color:var(--nas-sub)}.nas-dot{width:5px;height:5px;border-radius:50%;background:var(--nas-sub);display:inline-block;flex-shrink:0}.nas-dot.ok{background:var(--dsw-alias-state-success-primary)}.nas-dot.warn{background:var(--dsw-alias-state-warn-primary)}.nas-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;line-height:18px;border-radius:4px;padding:0 6px;background:var(--nas-raised);color:var(--nas-sub);white-space:nowrap}.nas-badge.active{color:var(--nas-brand);background:color-mix(in srgb,var(--nas-brand) 9%,transparent)}.nas-badge.warn{color:var(--dsw-alias-state-warn-primary)}.nas-badge.good{color:var(--dsw-alias-state-success-primary)}.nas-badge.error{color:var(--dsw-alias-state-error-primary)}.nas-channel-quota{font-size:19px;letter-spacing:-.3px;font-variant-numeric:tabular-nums}.nas-channel-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--nas-line);padding-top:12px;margin-top:auto;gap:10px}.nas-note{display:flex;gap:7px;align-items:flex-start;color:var(--nas-sub);font-size:11px;line-height:1.6;margin-top:14px}.nas-note svg{flex-shrink:0;margin-top:2px}.nas-empty{padding:36px 20px;border:1px dashed var(--nas-line);border-radius:10px;text-align:center;color:var(--nas-sub);font-size:13px}.nas-empty svg{display:block;margin:0 auto 10px}.nas-empty strong{display:block;color:var(--nas-text);font-weight:500;margin:8px 0}.nas-error{border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 30%,transparent);color:var(--dsw-alias-state-error-primary);background:var(--nas-bg);padding:10px 12px;border-radius:7px;font-size:12px;overflow-wrap:anywhere;white-space:pre-wrap}.nas-feedback{display:flex;align-items:center;gap:7px;border:1px solid var(--nas-line);padding:9px 12px;border-radius:7px;color:var(--dsw-alias-state-success-primary);font-size:12px;margin-bottom:15px}
       .nas-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}.nas-search{display:flex;align-items:center;gap:8px;flex:1;min-width:180px;border:1px solid var(--nas-line);background:var(--nas-bg);padding:0 10px;border-radius:7px;color:var(--nas-sub)}.nas-search input{border:0;outline:0;background:transparent;padding:7px 0;color:var(--nas-text);width:100%;font-size:12px;min-width:0}.nas-search:focus-within{border-color:var(--nas-brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--nas-brand) 14%,transparent)}.nas-search input:focus,.nas-search input:focus-visible{outline:0}.nas-filter{display:flex;gap:3px;flex-wrap:wrap}.nas-filter button{border:0;background:transparent;border-radius:5px;padding:5px 8px;color:var(--nas-sub);font-size:12px}.nas-filter button[aria-pressed=true]{background:var(--nas-raised);color:var(--nas-text)}.nas-models{border:1px solid var(--nas-line);border-radius:9px}.nas-model-head.v2{border-radius:8px 8px 0 0}.nas-model-row.v2:last-child{border-radius:0 0 8px 8px}.nas-model-head,.nas-model-row{display:grid;grid-template-columns:minmax(150px,1.25fr) minmax(150px,1.1fr) minmax(90px,.7fr) 32px;gap:16px;align-items:center;padding:11px 14px}.nas-model-head{background:var(--nas-raised);font-size:11px;color:var(--nas-sub);padding-top:8px;padding-bottom:8px}.nas-model-row+.nas-model-row{border-top:1px solid var(--nas-line)}.nas-model-row{background:var(--nas-bg)}.nas-model-name{font-weight:500;font-size:12px;overflow-wrap:anywhere;line-height:1.55}.nas-model-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.nas-model-cap{font-size:11px;color:var(--nas-sub)}.nas-model-cap strong{font-weight:550;color:var(--nas-text);font-variant-numeric:tabular-nums}.nas-model-source{font-size:11px;color:var(--nas-sub)}.nas-hide{opacity:.6}.nas-model-sub{font-size:10px;color:var(--nas-sub);margin-top:2px}.nas-settings-foot{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;color:var(--nas-sub);font-size:10px;border-top:1px solid var(--nas-line);padding-top:12px;margin-top:22px}.nas-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}.nas-gallery figure{margin:0;border:1px solid var(--nas-line);border-radius:8px;overflow:hidden}.nas-gallery img,.nas-gallery video{display:block;width:100%;height:150px;object-fit:contain;background:var(--nas-raised)}.nas-gallery figcaption{padding:8px;font-size:11px;color:var(--nas-sub);overflow-wrap:anywhere}.nas-task{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--nas-line)}
       .nas-dialog{max-width:580px;width:calc(100% - 40px);max-height:calc(100vh - 64px);border:1px solid var(--nas-line);border-radius:12px;background:var(--dsw-alias-bg-overlay);color:var(--nas-text);padding:0;overflow:auto;box-shadow:0 16px 60px color-mix(in srgb,var(--dsw-alias-label-primary) 16%,transparent)}.nas-dialog::backdrop{background:color-mix(in srgb,var(--dsw-alias-bg-base) 60%,transparent);backdrop-filter:blur(3px)}.nas-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px 14px}.nas-dialog-head h3{margin:0 0 5px;font-size:17px;font-weight:600}.nas-dialog-body{padding:4px 24px 20px}.nas-dialog-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:14px 24px;border-top:1px solid var(--nas-line);background:var(--nas-bg)}.nas-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;font-size:12px}.nas-field>label{font-weight:500}.nas-field small{font-size:11px;color:var(--nas-sub);font-weight:400}.nas-field input:not([type=checkbox]),.nas-field select{width:100%;height:35px;border:1px solid var(--nas-line);border-radius:6px;background:var(--nas-bg);color:var(--nas-text);padding:6px 10px;min-width:0;outline:none}.nas-field input:focus,.nas-field select:focus{border-color:var(--nas-brand)}.nas-fieldset{border:0;padding:0;margin:0 0 16px}.nas-fieldset legend{font-weight:500;font-size:12px;margin-bottom:8px}.nas-checks{display:flex;gap:12px;flex-wrap:wrap}.nas-check{display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;color:var(--nas-text);font-weight:400}.nas-check input{accent-color:var(--nas-brand);width:14px;height:14px;margin:0}.nas-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.nas-field-error{color:var(--dsw-alias-state-error-primary);font-size:11px}.nas-test{border:1px solid var(--nas-line);border-radius:7px;padding:11px 12px;font-size:12px;margin-top:12px}.nas-test.ok strong{color:var(--dsw-alias-state-success-primary)}.nas-test.bad{color:var(--dsw-alias-state-error-primary)}.nas-test small{display:block;color:var(--nas-sub);margin-top:3px}.nas-prompt{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--nas-sub);margin-top:8px}.nas-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--nas-sub);background:transparent;border:1px solid var(--nas-line);border-radius:7px;padding:2px 8px;cursor:pointer}.nas-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.nas-preview img,.nas-preview video{display:block;max-width:100%;max-height:280px;border-radius:8px;border:1px solid var(--nas-line)}.nas-spin{animation:nas-spin .9s linear infinite}@keyframes nas-spin{to{transform:rotate(360deg)}}
-      @media(max-width:760px){.nas-head{flex-direction:column;gap:12px}.nas-head h2{font-size:20px}.nas-stat{padding:13px}.nas-stat-value{font-size:18px}.nas-summary{grid-template-columns:1fr 1fr}.nas-stat:last-child{grid-column:1/-1;border-left:0;border-top:1px solid var(--nas-line)}.nas-model-head,.nas-model-row{grid-template-columns:minmax(110px,1fr) minmax(140px,1fr) 29px;gap:10px;padding:10px}.nas-model-head>:nth-child(3),.nas-model-row>.nas-model-source{display:none}.nas-tabs{gap:18px}.nas-two{grid-template-columns:1fr;gap:0}.nas-dialog-head{padding:18px 18px 12px}.nas-dialog-body{padding:4px 18px 16px}.nas-dialog-foot{padding:12px 18px}.nas-discover .nas-dialog-body{padding:0 18px}}
+      @media(max-width:760px){.nas-head{flex-direction:column;gap:12px}.nas-head h2{font-size:20px}.nas-model-head,.nas-model-row{grid-template-columns:minmax(110px,1fr) minmax(140px,1fr) 29px;gap:10px;padding:10px}.nas-model-head>:nth-child(3),.nas-model-row>.nas-model-source{display:none}.nas-tabs{gap:18px}.nas-two{grid-template-columns:1fr;gap:0}.nas-dialog-head{padding:18px 18px 12px}.nas-dialog-body{padding:4px 18px 16px}.nas-dialog-foot{padding:12px 18px}.nas-discover .nas-dialog-body{padding:0 18px}}
       .nas-model-head.v2,.nas-model-row.v2{grid-template-columns:minmax(160px,1.3fr) minmax(150px,1.1fr) minmax(120px,.85fr) auto}.nas-row-actions{display:flex;align-items:center;gap:2px;justify-content:flex-end}.nas-row-actions .nas-btn{border-color:transparent;background:transparent}.nas-row-actions .nas-btn:hover{border-color:var(--nas-line);background:var(--nas-raised)}
       .nas-test-cell{font-size:11px;color:var(--nas-sub);line-height:1.5;min-width:0}.nas-test-cell .ok{color:var(--dsw-alias-state-success-primary)}.nas-test-cell .bad{color:var(--dsw-alias-state-error-primary)}.nas-test-cell .num{font-variant-numeric:tabular-nums;color:var(--nas-text)}.nas-test-err{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
       .nas-mode{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--nas-line);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--nas-sub);margin-bottom:12px;background:var(--nas-bg)}.nas-mode svg{flex-shrink:0;margin-top:2px}
@@ -312,9 +309,8 @@ window.__ModuleLoader__.load({
       @container(max-width:520px){.nas-model-head.v2,.nas-model-row.v2{grid-template-columns:minmax(80px,1fr) 88px 84px;gap:8px;padding-left:10px;padding-right:10px}.nas-model-head.v2>:nth-child(2),.nas-model-row.v2>.nas-model-cap{display:none}.nas-model-head.v2>:nth-child(3){display:block}}
       .nas-dialog.nas-model-editor{max-width:620px;background:var(--nas-bg)}.nas-model-editor .nas-dialog-head{padding-bottom:16px}.nas-model-editor .nas-dialog-head h3{font-size:18px}.nas-model-editor .nas-dialog-foot{position:sticky;bottom:0;z-index:1;background:var(--nas-bg)}.nas-editor-identity{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 18px;border:1px solid var(--nas-line);border-radius:8px;background:var(--dsw-alias-bg-base)}.nas-editor-identity .nas-vendor-mark{width:26px;height:26px}.nas-editor-identity .nas-sub{font-size:10px;margin-bottom:3px}.nas-editor-identity code{font-family:inherit;font-size:12px;overflow-wrap:anywhere}.nas-editor-section{border-top:1px solid var(--nas-line);padding-top:16px;margin-top:16px}.nas-editor-section-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;margin-bottom:14px}.nas-editor-section-title>span{font-size:10px;color:var(--nas-sub);font-weight:400;letter-spacing:.06em}.nas-model-editor .nas-field{gap:5px;margin-bottom:14px}.nas-model-editor .nas-field input:not([type=checkbox]),.nas-model-editor .nas-field select{height:37px;background:var(--dsw-alias-bg-base)}.nas-number-field{position:relative}.nas-number-field input{padding-right:55px!important;font-variant-numeric:tabular-nums}.nas-number-field>span{position:absolute;right:10px;top:9px;color:var(--nas-sub);font-size:10px;pointer-events:none}.nas-mapping-preview{border-radius:7px;background:var(--nas-raised);padding:10px 12px;margin:0 0 4px}.nas-mapping-preview>.nas-sub{font-size:10px}.nas-mapping-path{display:flex;align-items:center;gap:10px;margin-top:5px;min-width:0}.nas-mapping-path code{font:inherit;font-size:11px;overflow-wrap:anywhere;min-width:0;flex:1}.nas-mapping-path svg{flex-shrink:0;color:var(--nas-sub)}.nas-mapping-path code.mapped{color:var(--nas-brand)}.nas-editor-cap-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:12px;font-weight:500}.nas-segment{display:flex;border:1px solid var(--nas-line);padding:2px;border-radius:6px;gap:2px;background:var(--dsw-alias-bg-base)}.nas-segment button{border:0;background:transparent;color:var(--nas-sub);border-radius:4px;padding:3px 9px;font-size:10px;line-height:1.4}.nas-segment button[aria-pressed=true]{background:var(--nas-raised);color:var(--nas-text)}.nas-modality-options{display:flex;flex-wrap:wrap;gap:6px}.nas-modality-options button{display:flex;align-items:center;gap:5px;border:1px solid var(--nas-line);background:var(--dsw-alias-bg-base);color:var(--nas-sub);padding:5px 9px;border-radius:6px;font-size:11px}.nas-modality-options button.selected{border-color:color-mix(in srgb,var(--nas-brand) 35%,var(--nas-line));color:var(--nas-brand);background:color-mix(in srgb,var(--nas-brand) 5%,var(--nas-bg))}.nas-modality-options button:disabled{opacity:1;cursor:default}.nas-editor-advanced{border-top:1px solid var(--nas-line);padding:14px 0 2px;margin-top:6px}.nas-editor-advanced summary{cursor:pointer;font-size:12px;color:var(--nas-sub)}.nas-editor-advanced[open] summary{margin-bottom:15px}.nas-editor-dirty{width:5px;height:5px;background:var(--dsw-alias-state-warn-primary);border-radius:50%;margin-right:2px}.nas-editor-reset{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--dsw-alias-state-warn-primary);background:var(--nas-raised);padding:10px;border-radius:6px;margin-top:12px}.nas-editor-reset svg{flex-shrink:0}.nas-model-editor .nas-error{margin-top:12px}
       .nas-dialog.nas-channel-editor{max-width:560px}.nas-editor-section.first{border-top:0;padding-top:0;margin-top:0}.nas-channel-editor .nas-editor-identity .nas-channel-mark{width:32px;height:32px;color:var(--nas-brand)}.nas-input-icon{position:relative;display:flex;align-items:center}.nas-input-icon>svg{position:absolute;left:11px;color:var(--nas-sub);pointer-events:none}.nas-input-icon input{padding-left:33px!important;padding-right:56px!important}.nas-input-toggle{position:absolute;right:6px;border:0;background:transparent;color:var(--nas-sub);font-size:11px;padding:4px 7px;border-radius:5px}.nas-input-toggle:hover{background:var(--nas-raised);color:var(--nas-text)}.nas-key-state{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--nas-sub);margin:-4px 0 4px}
-      .nas-activate-row{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid var(--nas-line);border-radius:8px;padding:11px 14px;margin-top:16px;cursor:pointer;background:var(--dsw-alias-bg-base)}.nas-activate-row strong{font-size:12px;font-weight:500}.nas-activate-row .nas-sub{font-size:11px;margin-top:2px}.nas-activate-row input{appearance:none;flex-shrink:0;width:32px;height:18px;border-radius:9px;background:var(--dsw-alias-border-l2);position:relative;cursor:pointer;transition:background .15s;margin:0}.nas-activate-row input::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--dsw-alias-bg-base);transition:transform .15s}.nas-activate-row input:checked{background:var(--nas-brand)}.nas-activate-row input:checked::after{transform:translateX(14px)}
       .nas-test-panel{border:1px solid var(--nas-line);border-radius:8px;margin-top:16px;overflow:hidden}.nas-test-head{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:12px}.nas-test-badge{display:inline-flex;align-items:center;gap:5px;font-weight:600}.nas-test-panel.ok .nas-test-badge{color:var(--dsw-alias-state-success-primary)}.nas-test-panel.bad .nas-test-badge{color:var(--dsw-alias-state-error-primary)}.nas-test-head .num{font-variant-numeric:tabular-nums;color:var(--nas-sub)}.nas-test-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--nas-line)}.nas-test-stat{padding:10px 14px;display:flex;flex-direction:column;gap:2px}.nas-test-stat+.nas-test-stat{border-left:1px solid var(--nas-line)}.nas-test-stat strong{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}.nas-test-stat span{font-size:10px;color:var(--nas-sub)}.nas-test-error{border-top:1px solid var(--nas-line);padding:10px 14px;font-size:11px;color:var(--dsw-alias-state-error-primary);overflow-wrap:anywhere;white-space:pre-wrap}
-      /* Channel rows: one active marker (ring + brand name), a health heart, and hover tooltips. */
+      /* Channel rows: identity, quota, health, provider route state, and hover tooltips. */
       .nas-ch-wrap{container-type:inline-size;position:relative}
       .nas-ch-list{border:1px solid var(--nas-line);border-radius:10px;background:var(--nas-bg)}
       .nas-ch-row{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr) minmax(0,auto) 72px auto;align-items:center;gap:12px;padding:9px 12px;min-height:54px}
@@ -322,16 +318,17 @@ window.__ModuleLoader__.load({
       .nas-ch-row:last-child{border-radius:0 0 9px 9px}
       .nas-ch-row+.nas-ch-row{border-top:1px solid var(--nas-line)}
       .nas-ch-row:hover{background:color-mix(in srgb,var(--nas-raised) 55%,transparent)}
-      .nas-ch-row.is-active{background:color-mix(in srgb,var(--nas-accent) 5%,transparent);box-shadow:inset 0 0 0 1px var(--nas-accent)}
       .nas-ch-mark{width:26px;height:26px;border-radius:7px;background:var(--nas-raised);color:var(--nas-sub);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-      .nas-ch-row.is-active .nas-ch-mark{color:var(--nas-accent);background:color-mix(in srgb,var(--nas-accent) 10%,transparent)}
       .nas-ch-id{min-width:0}
       .nas-ch-name{display:block;font-size:13px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .nas-ch-row.is-active .nas-ch-name{color:var(--nas-accent)}
       .nas-ch-url{font-size:11px;color:var(--nas-sub);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nas-ch-route{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--nas-sub);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nas-ch-route.warn{color:var(--dsw-alias-state-warn-primary)}
+      .nas-ch-route code{font:inherit;font-size:10px;overflow-wrap:anywhere}
       .nas-ch-quota{text-align:right;min-width:0;font-variant-numeric:tabular-nums;line-height:1.4}
       .nas-ch-amount{display:block;font-size:13px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .nas-ch-quota-label{display:block;font-size:10px;color:var(--nas-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nas-ch-models{display:block;font-size:10px;color:var(--nas-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .nas-ch-quota.bad .nas-ch-amount{color:var(--dsw-alias-state-error-primary);font-size:12px}
       .nas-ch-health{display:inline-flex;align-items:center;justify-content:flex-end;gap:5px;font-size:11px;color:var(--nas-sub);font-variant-numeric:tabular-nums}
       .nas-ch-health.ok{color:var(--dsw-alias-state-success-primary)}
@@ -350,7 +347,7 @@ window.__ModuleLoader__.load({
       .nas-model-channel>span:not(.nas-count){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .nas-model-channel:hover{background:var(--nas-raised);color:var(--nas-text)}
       .nas-model-channel.selected{color:var(--nas-text);border-color:var(--dsw-alias-border-l2);background:var(--nas-raised);font-weight:500}
-      .nas-model-channel.is-active svg{color:var(--nas-accent)}
+      .nas-model-channel svg{flex-shrink:0}
       .nas-mode.warn{color:var(--dsw-alias-state-warn-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 30%,var(--nas-line))}
       /* Model discovery: same visual language as the model table. */
       .nas-discover .nas-dialog-head{padding-bottom:14px}
@@ -380,20 +377,6 @@ window.__ModuleLoader__.load({
       .nas-skeleton{display:flex;flex-direction:column;gap:9px;padding:16px 12px}
       .nas-skeleton>i{display:block;height:14px;border-radius:5px;background:var(--nas-raised);animation:nas-pulse 1.2s ease-in-out infinite}
       @keyframes nas-pulse{50%{opacity:.45}}
-      /* Sidebar-foot balance: one compact row, two densities. */
-      .nas-side-balance{display:block;width:100%;min-width:0}
-      .nas-side-balance-btn{display:flex;align-items:center;gap:8px;width:100%;min-width:0;border:1px solid transparent;background:transparent;color:var(--nas-text);border-radius:8px;padding:6px 8px;text-align:left;line-height:1.35;transition:background .12s,border-color .12s}
-      .nas-side-balance-btn:hover{background:var(--nas-raised);border-color:var(--nas-line)}
-      .nas-side-balance-btn:focus-visible{outline:2px solid var(--nas-brand);outline-offset:2px}
-      .nas-side-balance-dot{width:7px;height:7px;border-radius:50%;background:var(--dsw-alias-state-idle-primary);flex-shrink:0}
-      .nas-side-balance-dot.ok{background:var(--dsw-alias-state-success-primary)}
-      .nas-side-balance-dot.warn{background:var(--dsw-alias-state-warn-primary)}
-      .nas-side-balance-main{display:flex;flex-direction:column;min-width:0;flex:1}
-      .nas-side-balance-name{font-size:11px;color:var(--nas-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .nas-side-balance-value{font-size:12px;font-weight:550;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .nas-side-balance-icon{display:inline-flex;color:var(--nas-sub);flex-shrink:0}
-      .nas-side-balance[data-wide=no] .nas-side-balance-btn{justify-content:center;padding:6px 0;gap:0}
-      .nas-side-balance[data-wide=no] .nas-side-balance-icon{display:none}
       /* Level chips: same look as the input-modality toggles. */
       .nas-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
       .nas-chips .nas-chip,.nas-chips button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--nas-line);background:var(--nas-bg);color:var(--nas-text);border-radius:7px;padding:4px 9px;font-size:12px;line-height:1.5}
@@ -438,7 +421,7 @@ window.__ModuleLoader__.load({
       @container(max-width:620px){.nas-ch-row{gap:10px}.nas-ch-health span{display:none}.nas-ch-amount{font-size:12px}.nas-ch-actions .nas-icon-btn{min-width:26px;width:26px}}
       @container(max-width:430px){.nas-ch-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 64px auto;gap:8px}.nas-ch-mark{display:none}.nas-ch-amount{overflow:hidden;text-overflow:ellipsis}.nas-ch-actions .nas-icon-btn{min-width:26px;width:26px}}
       @media(max-width:520px){.nas-test-stats{grid-template-columns:repeat(2,1fr)}.nas-test-stat:nth-child(3){border-left:0;border-top:1px solid var(--nas-line)}.nas-test-stat:nth-child(4){border-top:1px solid var(--nas-line)}}
-      @media(prefers-reduced-motion:reduce){.nas-spin{animation:none}.nas-btn{transition:none}.nas-progress>i{transition:none}.nas-activate-row input,.nas-activate-row input::after{transition:none}}
+      @media(prefers-reduced-motion:reduce){.nas-spin{animation:none}.nas-btn{transition:none}.nas-progress>i{transition:none}}
     `;
     function Styles() { return h('style', null, CSS); }
     function apiUrl(path) {
@@ -561,12 +544,12 @@ window.__ModuleLoader__.load({
     }
     function ChannelEditor({ channel, revision, onClose, onSaved }) {
       const t = useT(); const prefix = useId();
-      const [form, setForm] = useState({ name: channel?.name || '', baseURL: channel?.baseURL || '', apiKey: '', activate: false });
+      const [form, setForm] = useState({ name: channel?.name || '', baseURL: channel?.baseURL || '', apiKey: '' });
       const [tested, setTested] = useState(); const [validation, setValidation] = useState('');
       const [op, setOp] = useState(''); const [showKey, setShowKey] = useState(false); const a = useAction();
       const busy = Boolean(op);
       const set = (k) => (e) => { setForm((old) => ({ ...old, [k]: e.target.value })); setTested(undefined); setValidation(''); };
-      const dirty = form.name !== (channel?.name || '') || form.baseURL !== (channel?.baseURL || '') || Boolean(form.apiKey) || form.activate;
+      const dirty = form.name !== (channel?.name || '') || form.baseURL !== (channel?.baseURL || '') || Boolean(form.apiKey);
       // Changing the address of a saved channel needs a fresh token: the stored one is never sent to a new host.
       const addressChanged = Boolean(channel) && form.baseURL.trim().replace(/\/+$/, '') !== String(channel.baseURL || '').replace(/\/+$/, '');
       const check = (isTest) => {
@@ -597,8 +580,8 @@ window.__ModuleLoader__.load({
       h('form', { id: `${prefix}-form`, onSubmit: (e) => { e.preventDefault(); save(); } },
         channel && h('div', { className: 'nas-editor-identity' },
           h('div', { className: 'nas-channel-mark' }, h(Icon, { name: 'gateway', size: 17 })),
-          h('div', { style: { minWidth: 0, flex: 1 } }, h('div', { className: 'nas-sub' }, channel.name), h('code', null, channel.baseURL)),
-          h(Badge, { tone: channel.active ? 'active' : '' }, channel.active && h(Icon, { name: 'check', size: 11 }), t(channel.active ? 'active' : 'inactive'))),
+          h('div', { style: { minWidth: 0, flex: 1 } }, h('div', { className: 'nas-sub' }, `${channel.name} · ${t('providerRoute')}`), h('code', { 'data-tip': channel.baseURL, 'data-tip-align': 'start' }, channel.providerId || '—')),
+          h(Badge, null, h(Icon, { name: 'check', size: 11 }), t('enabled'))),
         h('section', { className: 'nas-editor-section first' }, sectionTitle('01', 'connectionSection'),
           h(Field, { label: t('channelName'), htmlFor: `${prefix}-name` }, h('input', { id: `${prefix}-name`, value: form.name, onChange: set('name'), placeholder: t('channelNamePlaceholder'), maxLength: 80, autoFocus: true, 'data-autofocus': true, disabled: busy })),
           h(Field, { label: t('address'), hint: t('addressHint'), htmlFor: `${prefix}-url` },
@@ -610,9 +593,6 @@ window.__ModuleLoader__.load({
               h('input', { id: `${prefix}-key`, type: showKey ? 'text' : 'password', autoComplete: 'new-password', spellCheck: false, value: form.apiKey, onChange: set('apiKey'), placeholder: t(channel && !addressChanged ? 'keyUnchanged' : 'keyPlaceholder'), disabled: busy }),
               form.apiKey && h('button', { type: 'button', className: 'nas-input-toggle', onClick: () => setShowKey(!showKey), 'aria-pressed': showKey, title: t(showKey ? 'hideKey' : 'showKey') }, t(showKey ? 'hideKey' : 'showKey')))),
           channel && h('div', { className: 'nas-key-state' }, h('span', { className: `nas-dot ${channel.keyConfigured ? 'ok' : 'warn'}` }), t(form.apiKey ? 'keyWillReplace' : channel.keyConfigured ? 'credentialSet' : 'credentialMissing'))),
-        !channel?.active && h('label', { className: 'nas-activate-row' },
-          h('div', null, h('strong', null, t('activateOnSave')), h('div', { className: 'nas-sub' }, t('activateHint'))),
-          h('input', { type: 'checkbox', role: 'switch', checked: form.activate, onChange: (e) => setForm({ ...form, activate: e.target.checked }), disabled: busy })),
         h(ErrorText, { text: validation || a.error }),
         tested ? h('div', { className: `nas-test-panel ${tested.ok ? 'ok' : 'bad'}`, role: 'status' },
           h('div', { className: 'nas-test-head' },
@@ -790,7 +770,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'nas-number-field' }, h('input', { id: `${id}-${k}`, inputMode: 'numeric', type: 'text', value: form[k], onChange: changed(k), placeholder: automatic ? String(automatic) : '—', disabled: a.pending }), h('span', null, 'tokens')));
       const sectionTitle = (n, key) => h('div', { className: 'nas-editor-section-title' }, h('span', null, n), t(key));
       const choices = [['text', 'text', 'document'], ['image', 'inputImage', 'image'], ['pdf', 'pdf', 'document'], ['audio', 'inputAudio', 'audio'], ['video', 'inputVideo', 'video']];
-      // Mapping suggestions come from the edited channel's own list, not the active channel's.
+      // Mapping suggestions come from the edited channel's own list, not another channel's.
       const suggestions = siblings.filter((value) => value !== model.id);
       return h(Modal, { title: t('modelEdit'), hint: channel.name, onClose, busy: a.pending, dirty, className: 'nas-model-editor',
         footer: h(React.Fragment, null,
@@ -836,8 +816,8 @@ window.__ModuleLoader__.load({
         resetting && h('div', { className: 'nas-editor-reset', role: 'status' }, h(Icon, { name: 'info', size: 14 }), t('resetDescription')),
         h(ErrorText, { text: invalid || a.error })));
     }
-    /** One compact row per gateway: identity · quota · health · actions. Details live in tooltips. */
-    function ChannelCard({ channel: ch, count, busy, onEdit, onActivate, onDelete }) {
+    /** One compact row per gateway: identity · route state · quota · health · actions. Details live in tooltips. */
+    function ChannelCard({ channel: ch, count, busy, onEdit, onDelete }) {
       const t = useT(); const b = ch.balance; const q = quota(b);
       const [confirm, setConfirm] = useState(false);
       const [check, setCheck] = useState({ running: false, result: undefined });
@@ -865,15 +845,21 @@ window.__ModuleLoader__.load({
         : b?.status === 'ok' ? { tone: 'ok', icon: 'heartPulse', tip: t('healthOk') }
         : { tone: 'idle', icon: 'heart', tip: t('healthUnknown') };
       const quotaTip = [t(q.label), b?.token?.unlimited ? t('unlimited') : null, failed ? b?.message : null].filter(Boolean).join('\n');
-      const label = `${ch.name}${ch.active ? ` · ${t('activeTip')}` : ''}`;
-      return h('div', { className: `nas-ch-row ${ch.active ? 'is-active' : ''}`, role: 'listitem', 'aria-current': ch.active ? 'true' : undefined, 'aria-label': label },
-        h('span', { className: 'nas-ch-mark', 'data-tip': t(ch.active ? 'activeTip' : 'inactiveTip'), 'data-tip-align': 'start' }, h(Icon, { name: ch.active ? 'check' : 'gateway', size: 15 })),
+      const pending = ch.routeStatus === 'pending';
+      const routeTip = pending ? [t('routePending'), ch.routeError].filter(Boolean).join('\n') : `${t('providerRoute')}: ${ch.providerId || '—'}`;
+      return h('div', { className: 'nas-ch-row', role: 'listitem', 'aria-label': `${ch.name}${pending ? ` · ${t('routePending')}` : ''}` },
+        h('span', { className: 'nas-ch-mark', 'data-tip': routeTip, 'data-tip-align': 'start' }, h(Icon, { name: 'gateway', size: 15 })),
         h('div', { className: 'nas-ch-id' },
           h('strong', { className: 'nas-ch-name' }, ch.name),
-          h('div', { className: 'nas-ch-url' }, ch.baseURL)),
+          h('div', { className: 'nas-ch-url' }, ch.baseURL),
+          h('div', { className: `nas-ch-route ${pending ? 'warn' : ''}`, 'data-tip': routeTip, 'data-tip-align': 'start' },
+            pending
+              ? h(React.Fragment, null, h(Icon, { name: 'alert', size: 10 }), t('routePending'))
+              : h('code', null, `${t('providerRoute')}: ${ch.providerId || '—'}`))),
         h('div', { className: `nas-ch-quota ${failed ? 'bad' : ''}`, 'data-tip': quotaTip },
           h('span', { className: 'nas-ch-amount' }, failed ? t('failed') : q.value),
-          h('span', { className: 'nas-ch-quota-label' }, failed ? t('balanceUnavailable') : t(q.label))),
+          h('span', { className: 'nas-ch-quota-label' }, failed ? t('balanceUnavailable') : t(q.label)),
+          h('span', { className: 'nas-ch-models', 'data-tip': t('modelCountTip') }, ch.modelCount == null ? '—' : `${ch.modelCount} ${t('modelsUnit')}`)),
         h('span', { className: `nas-ch-health ${health.tone}`, 'data-tip': health.tip, role: 'img', 'aria-label': health.tip },
           h(Icon, { name: health.icon, size: 15, spin: check.running }), health.text && h('span', null, health.text)),
         confirm
@@ -882,9 +868,6 @@ window.__ModuleLoader__.load({
             h(Button, { small: true, tone: 'danger', onClick: onDelete, disabled: busy }, t('remove')),
             h(Button, { small: true, tone: 'ghost', onClick: () => setConfirm(false) }, t('cancel')))
           : h('div', { className: 'nas-ch-actions' },
-            ch.active
-              ? h('span', { className: 'nas-ch-slot', 'aria-hidden': true })
-              : h(Button, { small: true, className: 'nas-icon-btn', icon: 'power', tip: t('activateTip'), tipAlign: 'end', onClick: onActivate, disabled: busy }),
             h(Button, { small: true, className: 'nas-icon-btn', icon: check.running ? 'refresh' : 'gauge', 'aria-busy': check.running, tip: t('channelTestTip'), tipAlign: 'end', onClick: runTest, disabled: check.running || !ch.keyConfigured }),
             h(Button, { small: true, className: 'nas-icon-btn', icon: 'edit', tip: t('editChannelTip'), tipAlign: 'end', onClick: onEdit, disabled: busy }),
             h(Button, { small: true, className: 'nas-icon-btn', icon: 'trash', tip: count < 2 ? t('lastChannel') : t('removeChannelTip'), tipAlign: 'end', disabled: busy || count < 2, onClick: () => setConfirm(true) })));
@@ -1146,24 +1129,24 @@ window.__ModuleLoader__.load({
       h(ErrorText, { text: invalid || a.error }));
     }
     /**
-     * Model list of one channel. The active channel's list rides on the shared
+     * Model list of one channel. The first channel's list rides on the shared
      * snapshot; any other channel is read on demand, so every gateway's list is
      * viewed and edited on its own.
      */
     function useChannelModels(state, channelId) {
-      const isActive = channelId === state.activeChannel;
+      const shared = Boolean(state.models) && channelId === state.models.channelId;
       const [other, setOther] = useState({ id: null, data: null, error: '', loading: false });
       // Re-read when the selection or the saved configuration (revision) changes.
       useEffect(() => {
-        if (isActive) return undefined;
+        if (shared) return undefined;
         let alive = true;
         setOther((o) => ({ id: channelId, data: o.id === channelId ? o.data : null, error: '', loading: true }));
         api('models/list', { channelId })
           .then((data) => { if (alive) setOther({ id: channelId, data, error: '', loading: false }); })
           .catch((e) => { if (alive) setOther({ id: channelId, data: null, error: e.message, loading: false }); });
         return () => { alive = false; };
-      }, [channelId, isActive, state.revision]);
-      if (isActive) return { models: state.models, loading: false, error: '' };
+      }, [channelId, shared, state.revision]);
+      if (shared) return { models: state.models, loading: false, error: '' };
       return { models: other.id === channelId ? other.data : null, loading: other.loading, error: other.id === channelId ? other.error : '' };
     }
     function ModelsPanel({ state, channel, onEdit, notify }) {
@@ -1271,19 +1254,26 @@ window.__ModuleLoader__.load({
         detail: error ? `${error}\n${t('loadFailedHint')}` : null,
         action: error ? h(Button, { icon: 'refresh', onClick: () => store.load() }, t('retry')) : null,
       }));
-      const channels = state.channels || []; const active = channels.find((c) => c.id === state.activeChannel) || channels[0];
-      const b = active?.balance || state.balance; const q = quota(b); const entries = state.models?.entries || [];
-      // Which channel the models tab shows. Defaults to the active one; falls back if that channel is removed.
-      const modelChannel = channels.find((c) => c.id === modelChannelId) || active;
-      const count = (kind) => entries.filter((e) => e.kind === kind).length;
+      const channels = state.channels || []; const first = channels[0];
+      // The snapshot carries the first channel's catalog; the models tab defaults to it.
+      const entries = state.models?.entries || [];
+      const modelChannel = channels.find((c) => c.id === modelChannelId) || first;
+      // Route directory: every channel is its own provider route; pending ones keep their error.
+      const routes = state.route?.routes || [];
+      const registeredRoutes = routes.filter((r) => r.status === 'registered');
+      const routeText = registeredRoutes.length ? registeredRoutes.map((r) => r.provider).filter(Boolean).join(' · ') : routes.length ? `${routes.length} ${t('routesCount')}` : '—';
+      const directoryError = state.route?.directoryError || '';
+      const routeDetail = [
+        ...routes.map((r) => (r.status === 'registered'
+          ? `${r.displayName || r.channelId || r.provider} · ${r.provider}`
+          : `${r.displayName || r.channelId || r.provider} · ${t('routePending')}${r.error ? `: ${r.error}` : ''}`)),
+        directoryError ? `${t('routeDirectory')}: ${directoryError}` : null,
+      ].filter(Boolean).join('\n');
+      const hasErrors = Boolean(state.errors) && Object.keys(state.errors).length > 0;
       const operate = (path, ch, key) => a.run(async () => { await store.mutate(path, { id: ch.id, revision: state.revision }); notify(key); });
-      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.9.4' }, h(Styles), header,
+      return h('div', { className: 'nas nas-page', 'data-newapi-provider-version': '0.10.0' }, h(Styles), header,
         notice && h('div', { className: 'nas-feedback', role: 'status' }, h(Icon, { name: 'check', size: 14 }), notice),
         h(ErrorText, { text: a.error || error }),
-        h('div', { className: 'nas-summary' },
-          h('div', { className: 'nas-stat' }, h('div', { className: 'nas-stat-label' }, t('currentChannel')), h('div', { className: 'nas-stat-value name' }, active?.name || '—'), h('div', { className: 'nas-stat-foot' }, active?.baseURL)),
-          h('div', { className: 'nas-stat' }, h('div', { className: 'nas-stat-label' }, t(q.label)), h('div', { className: 'nas-stat-value' }, q.value), h('div', { className: 'nas-stat-foot' }, b?.token?.unlimited ? t('unlimited') : b?.token?.name || '—')),
-          h('div', { className: 'nas-stat' }, h('div', { className: 'nas-stat-label' }, t('totalModels')), h('div', { className: 'nas-stat-value' }, entries.length), h('div', { className: 'nas-stat-foot' }, `${t('chat')} ${count('chat')} · ${t('image')} ${count('image')} · ${t('video')} ${count('video')}`))),
         h('div', { className: 'nas-tabs', role: 'tablist', 'aria-label': t('nav') }, ['channels', 'models', 'media'].map((k) => h('button', {
           key: k, type: 'button', className: `nas-tab ${tab === k ? 'selected' : ''}`, id: `nas-tab-${k}`, role: 'tab', 'aria-selected': tab === k, 'aria-controls': `nas-panel-${k}`, tabIndex: tab === k ? 0 : -1,
           onClick: () => setTab(k), onKeyDown: (e) => { if (['ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); const tabs = ['channels', 'models', 'media']; const next = tabs[(tabs.indexOf(k) + (e.key === 'ArrowLeft' ? 2 : 1)) % 3]; setTab(next); document.getElementById(`nas-tab-${next}`)?.focus(); } },
@@ -1293,57 +1283,31 @@ window.__ModuleLoader__.load({
             h('div', { className: 'nas-ch-wrap' }, h('div', { className: 'nas-ch-list', role: 'list', 'aria-label': t('channels') }, channels.map((c) => h(ChannelCard, {
               key: c.id, channel: c, count: channels.length, busy,
               onEdit: () => setEditor({ channel: c, revision: state.revision }),
-              onActivate: () => operate('channel/activate', c, 'activated'), onDelete: () => operate('channel/delete', c, 'removed'),
+              onDelete: () => operate('channel/delete', c, 'removed'),
             })))),
-            h('div', { className: 'nas-note', title: t('activateHint') }, h(Icon, { name: 'info', size: 13 }), t('channelHint'))),
+            h('div', { className: 'nas-note' }, h(Icon, { name: 'info', size: 13 }), t('channelHint'))),
           tab === 'models' && modelChannel && h(React.Fragment, null,
             h('div', { className: 'nas-model-channels', role: 'tablist', 'aria-label': t('modelsOfChannel') },
               channels.map((c) => h('button', {
                 key: c.id, type: 'button', role: 'tab', 'aria-selected': c.id === modelChannel.id,
-                className: `nas-model-channel ${c.id === modelChannel.id ? 'selected' : ''} ${c.active ? 'is-active' : ''}`,
-                'data-tip': c.active ? `${c.name} · ${t('activeTip')}` : c.name, 'data-tip-align': 'start',
+                className: `nas-model-channel ${c.id === modelChannel.id ? 'selected' : ''}`,
+                'data-tip': c.name, 'data-tip-align': 'start',
                 onClick: () => setModelChannelId(c.id),
-              }, h(Icon, { name: c.active ? 'check' : 'gateway', size: 12 }), h('span', null, c.name),
+              }, h(Icon, { name: 'gateway', size: 12 }), h('span', null, c.name),
               c.enabledCount != null && h('span', { className: 'nas-count' }, c.enabledCount)))),
-            !modelChannel.active && h('div', { className: 'nas-mode warn' }, h(Icon, { name: 'info', size: 13 }), t('viewingInactive')),
             h(ModelsPanel, {
               key: modelChannel.id, state, channel: modelChannel, notify: (message) => setNotice(message),
               onEdit: (model, siblings) => setModelEditor({ model, channel: modelChannel, revision: state.revision, siblings }),
             })),
           tab === 'media' && h(Gallery, { media: state.media })),
-        state.errors && Object.keys(state.errors).length > 0 && h('details', { style: { marginTop: 18 } }, h('summary', { className: 'nas-sub', style: { cursor: 'pointer' } }, t('issues')), Object.entries(state.errors).map(([key, v]) => h('div', { key, className: 'nas-note' }, `${key}: ${v.message}`))),
-        h('footer', { className: 'nas-settings-foot' }, h('span', null, `${t('route')}: ${state.route?.route || 'newapi-provider'} · ${state.modelsDev?.loaded ? `models.dev ${t('cached')}` : t('originNone')}`), h('span', null, h(Icon, { name: 'key', size: 11 }), ` ${t('privacy')}`)),
+        (hasErrors || directoryError) && h('details', { style: { marginTop: 18 } }, h('summary', { className: 'nas-sub', style: { cursor: 'pointer' } }, t('issues')),
+          directoryError && h('div', { className: 'nas-note' }, `${t('routeDirectory')}: ${directoryError}`),
+          hasErrors && Object.entries(state.errors).map(([key, v]) => h('div', { key, className: 'nas-note' }, `${key}: ${v.message}`))),
+        h('footer', { className: 'nas-settings-foot' },
+          h('span', { ...(routeDetail ? { 'data-tip': routeDetail, 'data-tip-align': 'start' } : {}) }, `${t('route')}: ${routeText} · ${state.modelsDev?.loaded ? `models.dev ${t('cached')}` : t('originNone')}`),
+          h('span', null, h(Icon, { name: 'key', size: 11 }), ` ${t('privacy')}`)),
         editor && h(ChannelEditor, { ...editor, onClose: () => setEditor(undefined), onSaved: () => notify('saved') }),
         modelEditor && h(ModelEditor, { ...modelEditor, onClose: () => setModelEditor(undefined), onSaved: (reset) => notify(reset ? 'modelReset' : 'modelSaved') }));
-    }
-    /**
-     * Sidebar-foot balance. The owner passes wide=true for the expanded column,
-     * false for the 56px rail, which keeps only the status dot.
-     */
-    function SidebarBalance({ wide = true }) {
-      const t = useT(); const { state, error, busy } = useProvider(); const a = useAction();
-      const active = state?.channels?.find((c) => c.id === state.activeChannel);
-      const b = active?.balance || state?.balance; const q = quota(b);
-      const failed = Boolean(error) || b?.status === 'error';
-      const name = active?.name || 'New API';
-      const detail = [
-        name,
-        state ? `${t(q.label)} ${q.value}` : t('loading'),
-        b?.token?.unlimited ? t('unlimited') : b?.token?.name,
-        failed ? (a.error || error || b?.message) : null,
-        `${t('refresh')} · ${t('sidebarBalanceHint')}`,
-      ].filter(Boolean).join('\n');
-      return h('span', { className: 'nas nas-side-balance', 'data-wide': wide ? 'yes' : 'no' }, h(Styles),
-        h('button', {
-          type: 'button', className: 'nas-side-balance-btn', disabled: busy,
-          'data-tip': detail, 'data-tip-align': 'start', 'aria-label': detail,
-          onClick: () => a.run(() => store.mutate('refresh', {})),
-        },
-        h('span', { className: `nas-side-balance-dot ${failed ? 'warn' : b?.status === 'ok' ? 'ok' : ''}` }),
-        wide && h('span', { className: 'nas-side-balance-main' },
-          h('span', { className: 'nas-side-balance-name' }, name),
-          h('span', { className: 'nas-side-balance-value' }, !state ? t('loading') : q.value)),
-        h('span', { className: 'nas-side-balance-icon' }, h(Icon, { name: 'wallet', size: 15 }))));
     }
     // Tool cards use durable tool output, not text scraping.
     function resultValue(props) { const b = props.phase === 'result' ? props.block : undefined; return b?.value ?? b?.result?.value ?? b?.output; }
@@ -1372,7 +1336,6 @@ window.__ModuleLoader__.load({
         ctx.effect(() => ctx.locale.register(NS, 'zh', stringsOnly(ZH)));
         translate = ctx.locale.bind(NS);
         ctx.effect(() => () => { store.dispose(); locale = undefined; translate = undefined; });
-        ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({ name: 'sidebar.footer.action', id: 'newapi-provider-balance', order: 30, label: translate('nav') }, SidebarBalance));
         ctx.slots.inject('settings.section', () => {
           let dispose;
           const register = () => { dispose?.(); dispose = ctx.slots.register({ name: 'settings.section', id: 'newapi-provider', order: 19, label: translate('nav') }, SettingsPage); };
